@@ -566,6 +566,10 @@ const TruthOrDareGenerator = () => {
                 sx={{ 
                   mb: 4, 
                   p: 3,
+                  minHeight: { xs: '120px', sm: '130px' },
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   background: themeMode === 'dark'
                     ? 'rgba(255, 255, 255, 0.03)'
                     : 'rgba(0, 0, 0, 0.02)',
