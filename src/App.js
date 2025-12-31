@@ -219,21 +219,28 @@ const TruthOrDareGenerator = () => {
     }
   }, [getAllQuestions]);
 
-  useEffect(() => {
-    loadQuestions();
-    trackVisitor();
-  }, [loadQuestions]);
-
-  const trackVisitor = async () => {
+  const loadQuestions = useCallback(() => {
     try {
-      // Get or create a unique visitor ID
+      setLoading(true);
+      setQuestions(getAllQuestions());
+      setError(null);
+    } catch (err) {
+      console.error('Error loading questions:', err);
+      setQuestions(getAllQuestions());
+      setError('載入問題時出錯');
+    } finally {
+      setLoading(false);
+    }
+  }, [getAllQuestions]);
+
+  const trackVisitor = useCallback(async () => {
+    try {
       let visitorId = localStorage.getItem('visitorId');
       if (!visitorId) {
         visitorId = 'visitor_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         localStorage.setItem('visitorId', visitorId);
       }
 
-      // Send visitor tracking request
       const response = await fetch('http://localhost:5001/api/visitor', {
         method: 'POST',
         headers: {
@@ -249,25 +256,16 @@ const TruthOrDareGenerator = () => {
     } catch (err) {
       console.error('Error tracking visitor:', err);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadQuestions();
+    trackVisitor();
+  }, [loadQuestions, trackVisitor]);
 
   useEffect(() => {
     setQuestions(getQuestionsByCategory(category));
   }, [category, getQuestionsByCategory]);
-
-  const loadQuestions = useCallback(() => {
-    try {
-      setLoading(true);
-      setQuestions(getAllQuestions());
-      setError(null);
-    } catch (err) {
-      console.error('Error loading questions:', err);
-      setQuestions(getAllQuestions());
-      setError('載入問題時出錯');
-    } finally {
-      setLoading(false);
-    }
-  }, [getAllQuestions]);
 
   const generateQuestion = useCallback(() => {
     if (questions.length === 0) {
@@ -340,7 +338,7 @@ const TruthOrDareGenerator = () => {
         transition: 'all 0.2s ease',
       }}
     >
-      {icon} {label}
+      {label}
     </Button>
   );
 
@@ -405,12 +403,6 @@ const TruthOrDareGenerator = () => {
             }}>
               <Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 0.5 }}>
-                  <Box sx={{ 
-                    fontSize: '2.5rem',
-                    animation: 'bounce 2s ease-in-out infinite',
-                  }}>
-                    🎲
-                  </Box>
                   <Box 
                     component="h1" 
                     sx={{ 
@@ -434,7 +426,7 @@ const TruthOrDareGenerator = () => {
                     pl: 0.5,
                   }}
                 >
-                  廣東話版 • 問題生成器
+                  廣東話出題
                 </Box>
               </Box>
               <FormControlLabel
@@ -455,7 +447,7 @@ const TruthOrDareGenerator = () => {
                     }}
                   />
                 }
-                label={themeMode === 'dark' ? '🌙' : '☀️'}
+                label={themeMode === 'dark' ? '黑' : '白'}
                 labelPlacement="start"
                 sx={{ 
                   margin: 0,
@@ -472,15 +464,15 @@ const TruthOrDareGenerator = () => {
               gap: 1.5, 
               mb: 3,
             }}>
-              <CategoryButton value="all" icon="🎲" label="全部" />
-              <CategoryButton value="truth" icon="💬" label="真心話" />
-              <CategoryButton value="dare" icon="🔥" label="大冒險" />
+              <CategoryButton value="all" icon="" label="全部" />
+              <CategoryButton value="truth" icon="" label="真心話" />
+              <CategoryButton value="dare" icon="" label="大冒險" />
             </Box>
             
             {/* Loading State */}
             {loading && (
               <Box sx={{ textAlign: 'center', py: 3 }}>
-                <Box sx={{ fontSize: '2rem', animation: 'spin 1s linear infinite' }}>⏳</Box>
+                <Box sx={{ fontSize: '1rem' }}>載入中</Box>
               </Box>
             )}
             
@@ -495,7 +487,7 @@ const TruthOrDareGenerator = () => {
                 border: '1px solid rgba(255, 82, 82, 0.3)'
               }}>
                 <Box component="p" sx={{ color: '#ff5252', m: 0, fontWeight: 500 }}>
-                  ⚠️ {error}
+                  {error}
                 </Box>
               </Box>
             )}
@@ -548,7 +540,7 @@ const TruthOrDareGenerator = () => {
                 transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
               }}
             >
-              {isSpinning ? '🎰 抽緊...' : '🎲 生成問題'}
+              {isSpinning ? '抽緊' : '出題'}
             </Button>
             
             {/* Question Display */}
@@ -579,7 +571,7 @@ const TruthOrDareGenerator = () => {
                     textAlign: 'center',
                   }}
                 >
-                  💭 {currentQuestion}
+                  {currentQuestion}
                 </Box>
               </Box>
             )}
@@ -603,7 +595,7 @@ const TruthOrDareGenerator = () => {
                   textAlign: 'center',
                 }}
               >
-                ✨ 添加自己嘅問題
+                加問題
               </Box>
               
               <TextField
@@ -660,7 +652,7 @@ const TruthOrDareGenerator = () => {
                   },
                 }}
               >
-                ➕ 添加問題
+                加
               </Button>
             </Box>
             
@@ -682,7 +674,7 @@ const TruthOrDareGenerator = () => {
                   fontWeight: 500
                 }}
               >
-                📊 {category === 'all' ? '全部' : category === 'truth' ? '真心話' : '大冒險'}: {questions.length} 條問題
+                問題數: {questions.length}
               </Box>
               <Box 
                 component="p" 
@@ -693,7 +685,7 @@ const TruthOrDareGenerator = () => {
                   fontWeight: 400
                 }}
               >
-                👥 訪客: {visitorStats.uniqueVisitors} | 🔢 總訪問: {visitorStats.totalVisits}
+                訪客: {visitorStats.uniqueVisitors} | 次數: {visitorStats.totalVisits}
               </Box>
             </Box>
           </CardContent>
