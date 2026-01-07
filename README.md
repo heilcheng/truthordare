@@ -1,3 +1,4 @@
+[廣東話](README.md) | [English](README.en.md) | [繁體中文](README.zh_tw.md)
 # 真心話大冒險（廣東話）
 
 網頁: https://heilcheng.github.io/truthordare
